@@ -3,10 +3,26 @@
 .sun-lines { position: absolute; top: 0; right: 0; width: 240px; height: 170px; background: url('/HomePage.png') top right / 1440px 1018px no-repeat; pointer-events: none; }
 .question-area { position: absolute; top: 24vh; left: 50%; width: min(920px, calc(100% - 48px)); transform: translateX(-50%); }
 h1 { margin: 0 0 27px; color: #5d5d5d; font: 500 24px/29px Inter, Arial, sans-serif; text-align: center; transform: translateY(-15px); }
-.question-bar { display: flex; align-items: center; height: 72px; padding: 0 24px; border-radius: 40px; background: #fff; box-shadow: 0 4px 4px rgb(0 0 0 / 10%); }
+.question-bar { display: flex; align-items: center; min-height: 72px; padding: 14px 24px; border-radius: 40px; background: #fff; box-shadow: 0 4px 4px rgb(0 0 0 / 10%); }
 .smiling-icon, .question-bar button img { width: 30px; height: 30px; object-fit: contain; flex: 0 0 30px; }
-.question-bar input { min-width: 0; flex: 1; margin: 0 16px; border: 0; outline: 0; color: #5d5d5d; font: 500 18px/24px Inter, Arial, sans-serif; }
-.question-bar input::placeholder { color: #5d5d5d; opacity: 1; }
+.smiling-button { display: grid; place-items: center; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.question-bar textarea { min-width: 0; max-height: 260px; flex: 1; margin: 0 16px; padding: 0; overflow: hidden; border: 0; outline: 0; resize: none; color: #5d5d5d; font: 500 18px/24px Inter, Arial, sans-serif; }
+.question-bar textarea::placeholder { color: #5d5d5d; opacity: 1; }
 .question-bar button { padding: 0; border: 0; background: transparent; cursor: pointer; }
 .question-bar button:focus-visible { outline: 2px solid #3e7dff; outline-offset: 4px; border-radius: 8px; }
-@media (max-width: 700px) { .question-area { top: 20vh; width: calc(100% - 32px); } h1 { font-size: 18px; line-height: 23px; margin-bottom: 18px; } .question-bar { height: 60px; padding: 0 16px; } .question-bar input { margin: 0 10px; font-size: 14px; line-height: 20px; } }
+.answer-area { position: absolute; top: 50%; right: 0; bottom: 0; left: 0; overflow-x: auto; overflow-y: scroll; background: #fdfdfd; scrollbar-color: #bcbcbc #fdfdfd; scrollbar-width: auto; }
+.pet-overlay { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; background: rgb(255 255 255 / 62%); backdrop-filter: blur(2px); }
+.pet-chooser { position: relative; width: min(600px, calc(100% - 32px)); min-height: 260px; padding: 58px 42px 42px; border-radius: 32px; background: rgb(255 255 255 / 92%); box-shadow: 0 8px 30px rgb(0 0 0 / 14%); text-align: center; font-family: Inter, Arial, sans-serif; }
+.pet-chooser h2 { margin: 0 0 16px; color: #5d5d5d; font: 500 26px/32px Inter, Arial, sans-serif; }
+.pet-close { position: absolute; top: 8px; right: 12px; width: 28px; height: 28px; padding: 0; border: 0; background: transparent; color: #5d5d5d; cursor: pointer; font: 400 28px/28px Inter, Arial, sans-serif; }
+.pet-close:hover, .pet-close:focus-visible { color: #4385ff; outline: none; }
+.pet-chooser p { margin: 0 0 16px; color: #5d5d5d; font: 500 18px/24px Inter, Arial, sans-serif; }
+.pet-options { display: flex; justify-content: center; gap: 14px; }
+.pet-options button { padding: 16px 30px; border: 1px solid #dedede; border-radius: 18px; background: #fff; color: #5d5d5d; cursor: pointer; font: 500 18px Inter, Arial, sans-serif; }
+.pet-options button:hover, .pet-options button:focus-visible { border-color: #4385ff; outline: none; }
+.pet-celebration { position: fixed; inset: 0; z-index: 6; display: grid; place-items: center; background: rgb(255 255 255 / 42%); pointer-events: none; }
+.pet-celebration img { width: 120px; height: 120px; border-radius: 16px; object-fit: cover; animation: pet-pop 2s ease-in-out forwards; }
+@keyframes pet-pop { 0% { opacity: 0; transform: scale(0.2); } 18% { opacity: 1; transform: scale(3.5); } 72% { opacity: 1; transform: scale(1.4); } 100% { opacity: 0; transform: scale(0.05); } }
+.pet-gallery { position: absolute; z-index: 2; top: 55%; left: 50%; display: flex; gap: 18px; width: min-content; transform: translateX(-50%); }
+.pet-gallery img { width: 120px; height: 120px; border-radius: 12px; object-fit: cover; }
+@media (max-width: 700px) { .question-area { top: 20vh; width: calc(100% - 32px); } h1 { font-size: 18px; line-height: 23px; margin-bottom: 18px; } .question-bar { min-height: 60px; padding: 14px 16px; } .question-bar textarea { margin: 0 10px; font-size: 14px; line-height: 20px; } .answer-area { top: 50%; } .pet-gallery { top: 58%; gap: 10px; } .pet-gallery img { width: 120px; height: 120px; } .pet-options { flex-direction: column; } }
