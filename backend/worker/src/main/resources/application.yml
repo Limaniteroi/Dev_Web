@@ -1,0 +1,27 @@
+spring:
+  application.name: worker
+  main.web-application-type: none
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:app}
+    password: ${RABBITMQ_PASSWORD:app}
+    listener.simple:
+      acknowledge-mode: manual
+      prefetch: ${WORKER_PREFETCH:1}
+      default-requeue-rejected: true
+  ai.openai:
+    api-key: ${OPENAI_API_KEY:}
+    chat.options.model: ${OPENAI_MODEL:gpt-4o-mini}
+  jackson.default-property-inclusion: non_null
+app:
+  messaging:
+    questions-exchange: perguntas.exchange
+    questions-queue: perguntas.queue
+    questions-routing-key: perguntas.nova
+    answers-exchange: respostas.exchange
+    answers-queue: respostas.queue
+    answers-routing-key: respostas.pronta
+  retry:
+    max-attempts: ${LLM_RETRY_MAX_ATTEMPTS:3}
+    backoff-ms: ${LLM_RETRY_BACKOFF_MS:2000}

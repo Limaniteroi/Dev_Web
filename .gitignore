@@ -1,0 +1,16 @@
+# Frontend generated files
+frontend/node_modules/
+frontend/dist/
+frontend/.env*
+
+# Backend local secrets and generated files
+backend/.env
+backend/target/
+backend/**/target/
+
+# IDE and OS files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

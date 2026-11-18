@@ -1,0 +1,12 @@
+.home-page { position: relative; min-height: 100svh; overflow-x: hidden; border-radius: 0; background: #fff url('/HomePage-final.png') center top / contain no-repeat; }
+.brand { position: absolute; top: 25px; left: 68px; color: #3e7dff; font: 300 47px/1 'Brush Script MT', 'Segoe Print', cursive; letter-spacing: -4px; }
+.sun-lines { position: absolute; top: 0; right: 0; width: 240px; height: 170px; background: url('/HomePage.png') top right / 1440px 1018px no-repeat; pointer-events: none; }
+.question-area { position: absolute; top: 24vh; left: 50%; width: min(920px, calc(100% - 48px)); transform: translateX(-50%); }
+h1 { margin: 0 0 27px; color: #5d5d5d; font: 500 24px/29px Inter, Arial, sans-serif; text-align: center; transform: translateY(-15px); }
+.question-bar { display: flex; align-items: center; height: 72px; padding: 0 24px; border-radius: 40px; background: #fff; box-shadow: 0 4px 4px rgb(0 0 0 / 10%); }
+.smiling-icon, .question-bar button img { width: 30px; height: 30px; object-fit: contain; flex: 0 0 30px; }
+.question-bar input { min-width: 0; flex: 1; margin: 0 16px; border: 0; outline: 0; color: #5d5d5d; font: 500 18px/24px Inter, Arial, sans-serif; }
+.question-bar input::placeholder { color: #5d5d5d; opacity: 1; }
+.question-bar button { padding: 0; border: 0; background: transparent; cursor: pointer; }
+.question-bar button:focus-visible { outline: 2px solid #3e7dff; outline-offset: 4px; border-radius: 8px; }
+@media (max-width: 700px) { .question-area { top: 20vh; width: calc(100% - 32px); } h1 { font-size: 18px; line-height: 23px; margin-bottom: 18px; } .question-bar { height: 60px; padding: 0 16px; } .question-bar input { margin: 0 10px; font-size: 14px; line-height: 20px; } }
