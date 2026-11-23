@@ -27,14 +27,12 @@ java -jar gateway/target/gateway-0.0.1-SNAPSHOT.jar
 O RabbitMQ (e, se quiser, o Ollama) sobe pelo `docker-compose.yml` da raiz. As instruções
 completas estão no [README principal](../README.md).
 
-## Provedor de LLM
+## LLM (Ollama)
 
-Escolhido por `LLM_PROVIDER` no `.env`:
-
-- `ollama`: modelo local gratuito (`OLLAMA_BASE_URL`, `OLLAMA_MODEL`, padrão `qwen3.5:4b`; `LLM_THINKING=false`). Baixe o modelo antes
-  com `ollama pull` (ou use `OLLAMA_PULL_STRATEGY=when_missing`). O Worker sobe mesmo com o
-  Ollama fora do ar; nesse caso as perguntas recebem a resposta de erro após as tentativas.
-- `openai`: precisa de `OPENAI_API_KEY` (`OPENAI_MODEL`, padrão `gpt-4o-mini`).
+O Worker usa um modelo local no Ollama: `OLLAMA_BASE_URL` e `OLLAMA_MODEL` (padrão `qwen3.5:4b`,
+com `LLM_THINKING=false`). Baixe o modelo antes com `ollama pull` (ou use
+`OLLAMA_PULL_STRATEGY=when_missing`). O Worker sobe mesmo com o Ollama fora do ar; nesse caso as
+perguntas recebem a resposta de erro após as tentativas.
 
 Retry: `LLM_RETRY_MAX_ATTEMPTS` (3) e `LLM_RETRY_BACKOFF_MS` (2000). Teto de tokens por resposta:
 `LLM_MAX_TOKENS` (2048).

@@ -1,6 +1,5 @@
 # Sistema completo (LLM = Ollama instalado no Windows, GPU):  docker compose up -d --build
 # Sem Ollama instalado (Ollama em Docker, CPU, lento):        COMPOSE_OLLAMA_URL=http://ollama:11434 docker compose --profile ollama up -d --build
-# Com OpenAI:                                                  LLM_PROVIDER=openai OPENAI_API_KEY=sk-... docker compose up -d --build
 # Só a infraestrutura (dev):                                   docker compose up -d rabbitmq
 #
 # Variáveis podem ser definidas num arquivo .env na raiz (mesmo formato de backend/.env.example).
@@ -48,9 +47,6 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_USER:-app}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-app}
-      LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
       # Padrão: Ollama instalado no Windows (GPU). Ollama em Docker: COMPOSE_OLLAMA_URL=http://ollama:11434
       OLLAMA_BASE_URL: ${COMPOSE_OLLAMA_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3.5:4b}

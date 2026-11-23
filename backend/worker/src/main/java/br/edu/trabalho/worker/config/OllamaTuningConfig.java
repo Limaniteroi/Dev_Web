@@ -4,7 +4,6 @@ import org.springframework.ai.chat.client.ChatClientCustomizer;
 import org.springframework.ai.ollama.api.OllamaChatOptions;
 import org.springframework.ai.ollama.api.ThinkOption;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,7 +16,6 @@ import org.springframework.context.annotation.Configuration;
  * didático a resposta direta é suficiente, então o padrão é desligado ({@code LLM_THINKING=false}).
  */
 @Configuration
-@ConditionalOnProperty(name = "spring.ai.model.chat", havingValue = "ollama")
 public class OllamaTuningConfig {
 
     @Bean

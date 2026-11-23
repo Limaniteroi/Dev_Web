@@ -15,7 +15,7 @@ flowchart LR
     R[React<br/>frontend] -- "POST /api/perguntas<br/>(JWT)" --> G[Gateway<br/>Spring Boot]
     G -- "AMQP<br/>perguntas.exchange" --> QP[(perguntas.queue)]
     QP --> W[Worker<br/>Spring Boot sem Tomcat]
-    W -- "Spring AI<br/>(retry 3x / 2s)" --> L[LLM<br/>OpenAI ou Ollama]
+    W -- "Spring AI<br/>(retry 3x / 2s)" --> L[LLM local<br/>Ollama]
     W -- "AMQP<br/>respostas.exchange" --> QR[(respostas.queue)]
     QR -- "@RabbitListener" --> G
     G -- "SSE (SseEmitter por userId)" --> R
@@ -71,11 +71,10 @@ típica (~650 tokens) leva ~40 s, e a primeira chamada leva ~1 min a mais para c
 (`LLM_THINKING=false`), senão o modelo gasta o orçamento de tokens raciocinando e devolve
 resposta vazia.
 
-Alternativas (definidas num `.env` na raiz):
+Variações do Ollama (definidas num `.env` na raiz):
 
 | Situação | Configuração | Observação |
 |---|---|---|
-| OpenAI | `LLM_PROVIDER=openai` e `OPENAI_API_KEY=sk-...` | ~5 s por resposta, pago |
 | Sem Ollama instalado | `COMPOSE_OLLAMA_URL=http://ollama:11434` e rodar com `--profile ollama`; baixe o modelo com `docker compose exec ollama ollama pull qwen3.5:2b` | Ollama em Docker, só CPU: use `OLLAMA_MODEL=qwen3.5:2b` |
 | Outro modelo | `OLLAMA_MODEL=...` e `ollama pull` do modelo | ou `OLLAMA_PULL_STRATEGY=when_missing` para o Worker baixar ao iniciar |
 
@@ -88,7 +87,7 @@ Pré-requisitos: JDK 21, Node 22+, Docker Desktop.
 docker compose up -d rabbitmq
 
 # 2. Backend (na pasta backend/)
-cp .env.example .env                              # ajuste LLM_PROVIDER, chaves etc.
+cp .env.example .env                              # ajuste OLLAMA_MODEL etc. se quiser
 ./mvnw package                                    # compila e roda os testes
 java -jar worker/target/worker-0.0.1-SNAPSHOT.jar
 java -jar gateway/target/gateway-0.0.1-SNAPSHOT.jar

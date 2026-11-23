@@ -29,11 +29,7 @@
             <artifactId>spring-retry</artifactId>
         </dependency>
 
-        <!-- Spring AI: o provedor ativo é escolhido por spring.ai.model.chat (openai | ollama) -->
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-model-openai</artifactId>
-        </dependency>
+        <!-- Spring AI com LLM local via Ollama -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-ollama</artifactId>

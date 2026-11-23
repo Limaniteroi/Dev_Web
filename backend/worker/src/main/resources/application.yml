@@ -20,27 +20,16 @@ spring:
       default-requeue-rejected: false
   http.client:
     connect-timeout: 10s
-    # Modelo local: até ~2 min gerando + ~1 min carregando na 1ª chamada; nuvem responde em 5-10 s
+    # Modelo local: até ~2 min gerando + ~1 min carregando na 1ª chamada
     read-timeout: ${LLM_READ_TIMEOUT:300s}
   ai:
     model:
-      # Provedor de chat ativo: openai | ollama
-      chat: ${LLM_PROVIDER:openai}
-      # Desliga o que não usamos (evita exigir chave de API para embeddings/imagens etc.)
+      # A LLM roda localmente no Ollama
+      chat: ollama
+      # Embeddings não são usados
       embedding: none
-      image: none
-      audio.speech: none
-      audio.transcription: none
-      moderation: none
     # O retry é feito explicitamente pelo Worker (app.retry); desliga o retry interno do Spring AI
     retry.max-attempts: 1
-    openai:
-      api-key: ${OPENAI_API_KEY:sem-chave}
-      chat.options:
-        model: ${OPENAI_MODEL:gpt-4o-mini}
-        temperature: 0.3
-        # Teto de tokens por resposta: controla custo e evita gerações sem fim
-        max-tokens: ${LLM_MAX_TOKENS:2048}
     ollama:
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
       # never: o Worker sobe mesmo com o Ollama fora do ar (a falha vira retry + resposta de erro,

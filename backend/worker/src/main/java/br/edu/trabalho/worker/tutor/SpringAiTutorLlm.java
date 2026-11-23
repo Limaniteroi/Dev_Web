@@ -8,9 +8,8 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.stereotype.Component;
 
 /**
- * Chamada à LLM via Spring AI. O {@link ChatClient} abstrai o provedor (OpenAI, Ollama, ...)
- * da mesma forma que o Spring Data abstrai o banco: trocar de provedor é só configuração
- * ({@code spring.ai.model.chat}).
+ * Chamada à LLM local (Ollama) via Spring AI. O {@link ChatClient} abstrai as requisições HTTP
+ * ao provedor da mesma forma que o Spring Data abstrai o banco de dados.
  */
 @Component
 public class SpringAiTutorLlm implements TutorLlm {
