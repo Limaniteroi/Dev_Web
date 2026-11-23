@@ -1,0 +1,93 @@
+# Sistema completo (LLM = Ollama instalado no Windows, GPU):  docker compose up -d --build
+# Sem Ollama instalado (Ollama em Docker, CPU, lento):        COMPOSE_OLLAMA_URL=http://ollama:11434 docker compose --profile ollama up -d --build
+# Com OpenAI:                                                  LLM_PROVIDER=openai OPENAI_API_KEY=sk-... docker compose up -d --build
+# Só a infraestrutura (dev):                                   docker compose up -d rabbitmq
+#
+# Variáveis podem ser definidas num arquivo .env na raiz (mesmo formato de backend/.env.example).
+
+services:
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: perguntas-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"     # AMQP (Gateway e Worker)
+      - "15672:15672"   # painel: http://127.0.0.1:15672 (app/app)
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-app}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-app}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./backend/infra/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Alternativa ao Ollama do Windows: LLM em Docker (só CPU). Ative com --profile ollama.
+  ollama:
+    image: ollama/ollama:latest
+    container_name: tutoria-ollama
+    profiles: ["ollama"]
+    restart: unless-stopped
+    ports:
+      - "11435:11434"   # 11435 no host para não conflitar com um Ollama instalado no Windows
+    volumes:
+      - ollama_data:/root/.ollama
+
+  worker:
+    build:
+      context: ./backend
+      target: worker
+    restart: unless-stopped
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-app}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-app}
+      LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      # Padrão: Ollama instalado no Windows (GPU). Ollama em Docker: COMPOSE_OLLAMA_URL=http://ollama:11434
+      OLLAMA_BASE_URL: ${COMPOSE_OLLAMA_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3.5:4b}
+      LLM_THINKING: ${LLM_THINKING:-false}
+      OLLAMA_PULL_STRATEGY: ${OLLAMA_PULL_STRATEGY:-never}
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-2}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # necessário em Linux; no Docker Desktop já existe
+    # Para testar vários Workers competindo pela fila: docker compose up -d --scale worker=3
+
+  gateway:
+    build:
+      context: ./backend
+      target: gateway
+    restart: unless-stopped
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-app}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-app}
+      JWT_SECRET: ${JWT_SECRET:-troque-este-segredo-de-desenvolvimento-com-32+chars}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-senha123}
+      # FRONTEND_ORIGIN usa o padrão do application.yml (localhost e 127.0.0.1, portas 5173 e 3000)
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - gateway
+    ports:
+      - "3000:80"       # http://127.0.0.1:3000
+
+volumes:
+  rabbitmq_data:
+  ollama_data:
+    name: ollama_data   # reaproveita o modelo já baixado

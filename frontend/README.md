@@ -1,16 +1,18 @@
-# React + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + Vite. Telas de login/cadastro e de perguntas. As respostas chegam em tempo real por SSE.
 
-Currently, two official plugins are available:
+- [src/api.js](src/api.js): chamadas ao Gateway e sessão (JWT no `localStorage`).
+- [src/useAnswerStream.js](src/useAnswerStream.js): stream SSE com `@microsoft/fetch-event-source`
+  (envia `Authorization: Bearer`), reconexão automática e recarga do histórico a cada reconexão.
+- [src/Conversation.jsx](src/Conversation.jsx): lista de perguntas e respostas (Markdown com `react-markdown`).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+npm run dev     # http://localhost:5173 — proxy de /api para http://127.0.0.1:8080
+npm run lint
+npm run build
+```
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Para apontar o proxy para outro Gateway: `VITE_PROXY_TARGET=http://host:porta npm run dev`.
+Em produção (Docker), o Nginx serve o build e faz o proxy de `/api` ([nginx.conf](nginx.conf)).
