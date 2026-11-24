@@ -43,6 +43,7 @@ flowchart LR
 | Filas duráveis / persistência | [RabbitTopologyConfig](backend/common/src/main/java/br/edu/trabalho/common/messaging/RabbitTopologyConfig.java): exchanges e filas `durable`, mensagens `PERSISTENT`, DLQ |
 | Jackson nos dois lados | `Jackson2JsonMessageConverter` no módulo `common`; DTOs `QuestionMessage` / `AnswerMessage` compartilhados |
 | Extração de dados + correlation_id | [QuestionListener](backend/worker/src/main/java/br/edu/trabalho/worker/messaging/QuestionListener.java) |
+| Publicação com a routing key do usuário (3.1) | `respostas.exchange` do tipo *topic*: o Worker publica com `respostas.<userId>` e `respostas.queue` recebe pelo binding `respostas.#` ([RabbitTopologyConfig](backend/common/src/main/java/br/edu/trabalho/common/messaging/RabbitTopologyConfig.java), [QuestionListener](backend/worker/src/main/java/br/edu/trabalho/worker/messaging/QuestionListener.java)) |
 | Prompt engineering | [PromptEnricher](backend/worker/src/main/java/br/edu/trabalho/worker/tutor/PromptEnricher.java) + `app.tutor` no `application.yml` |
 | Spring AI | [SpringAiTutorLlm](backend/worker/src/main/java/br/edu/trabalho/worker/tutor/SpringAiTutorLlm.java) (`ChatClient`) |
 | Retry após falha / rate limit | [QuestionProcessor](backend/worker/src/main/java/br/edu/trabalho/worker/tutor/QuestionProcessor.java) + [WorkerConfig](backend/worker/src/main/java/br/edu/trabalho/worker/config/WorkerConfig.java) |
@@ -102,6 +103,10 @@ No Windows use `mvnw.cmd` no lugar de `./mvnw`.
 > **Windows:** se `http://localhost:15672` (ou outra porta do Docker) não abrir, use
 > `http://127.0.0.1:...`. Com o WSL ativo, `localhost` pode resolver para `::1` e cair num
 > encaminhamento do WSL que não responde. Por isso o `.env.example` e o proxy do Vite usam `127.0.0.1`.
+
+> **RabbitMQ de uma versão anterior:** se o log mostrar `PRECONDITION_FAILED` para
+> `respostas.exchange` (ela passou de *direct* para *topic*), apague a exchange antiga no painel
+> (Exchanges → `respostas.exchange` → Delete) ou recrie o broker com `docker compose down -v`.
 
 ## Testes
 

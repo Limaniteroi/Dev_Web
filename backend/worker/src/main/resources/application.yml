@@ -55,7 +55,8 @@ app:
     questions-dead-letter-queue: perguntas.dlq
     answers-exchange: respostas.exchange
     answers-queue: respostas.queue
-    answers-routing-key: respostas.pronta
+    # Routing key por usuário: respostas.<userId>; respostas.queue usa o binding respostas.#
+    answers-routing-key-prefix: respostas
   llm:
     # Raciocínio prévio de modelos "thinking" (Qwen3.5 etc.). Ver OllamaTuningConfig.
     thinking: ${LLM_THINKING:false}

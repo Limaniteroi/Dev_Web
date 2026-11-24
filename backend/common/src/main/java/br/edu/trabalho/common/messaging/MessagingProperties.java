@@ -14,6 +14,21 @@ public record MessagingProperties(
         String questionsDeadLetterQueue,
         String answersExchange,
         String answersQueue,
-        String answersRoutingKey
+        String answersRoutingKeyPrefix
 ) {
+
+    /**
+     * Routing key da resposta, específica do usuário: {@code respostas.<userId>} (ex.: respostas.aluno).
+     */
+    public String answersRoutingKeyFor(String userId) {
+        return answersRoutingKeyPrefix + "." + userId;
+    }
+
+    /**
+     * Padrão do binding de {@code respostas.queue} na exchange topic: {@code respostas.#}
+     * ({@code #} casa qualquer sequência de palavras, logo a resposta de qualquer usuário).
+     */
+    public String answersBindingPattern() {
+        return answersRoutingKeyPrefix + ".#";
+    }
 }

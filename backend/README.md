@@ -12,7 +12,7 @@ Projeto Maven multi-módulo (Java 21, Spring Boot 3.5, Spring AI 1.1):
 
 ```
 perguntas.exchange --perguntas.nova-->   perguntas.queue --(rejeitada)--> perguntas.dlx --> perguntas.dlq
-respostas.exchange --respostas.pronta--> respostas.queue
+respostas.exchange (topic) --respostas.<userId>--> [binding respostas.#] --> respostas.queue
 ```
 
 ## Rodando

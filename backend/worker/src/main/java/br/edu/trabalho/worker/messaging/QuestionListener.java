@@ -57,12 +57,14 @@ public class QuestionListener {
     }
 
     private void publish(AnswerMessage answer) {
-        rabbitTemplate.convertAndSend(props.answersExchange(), props.answersRoutingKey(), answer, message -> {
+        // Routing key específica do usuário dono da pergunta (ex.: respostas.aluno)
+        String routingKey = props.answersRoutingKeyFor(answer.userId());
+        rabbitTemplate.convertAndSend(props.answersExchange(), routingKey, answer, message -> {
             message.getMessageProperties().setCorrelationId(answer.correlationId());
             return message;
         });
-        log.info("Resposta {} publicada em {} (status {})",
-                answer.correlationId(), props.answersExchange(), answer.status());
+        log.info("Resposta {} publicada em {} com routing key {} (status {})",
+                answer.correlationId(), props.answersExchange(), routingKey, answer.status());
     }
 
     private static boolean isBlank(String s) {

@@ -2,6 +2,7 @@ package br.edu.trabalho.gateway;
 
 import br.edu.trabalho.common.messaging.AnswerMessage;
 import br.edu.trabalho.common.messaging.AnswerStatus;
+import br.edu.trabalho.common.messaging.MessagingProperties;
 import br.edu.trabalho.common.messaging.QuestionMessage;
 import br.edu.trabalho.gateway.messaging.AnswerListener;
 import br.edu.trabalho.gateway.question.QuestionPublisher;
@@ -43,6 +44,8 @@ class GatewayApiTest {
     ObjectMapper json;
     @Autowired
     AnswerListener answerListener;
+    @Autowired
+    MessagingProperties messaging;
     @MockitoBean
     QuestionPublisher publisher;
 
@@ -101,6 +104,12 @@ class GatewayApiTest {
                         .content("{\"username\":\"aluno\",\"password\":\"senha123\"}"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.detail").value("Usuário já existe"));
+    }
+
+    @Test
+    void routingKeyDaRespostaEhDoUsuarioEOBindingAceitaQualquerUsuario() {
+        assertThat(messaging.answersRoutingKeyFor("aluno")).isEqualTo("respostas.aluno");
+        assertThat(messaging.answersBindingPattern()).isEqualTo("respostas.#");
     }
 
     @Test
