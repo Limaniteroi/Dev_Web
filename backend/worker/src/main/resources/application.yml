@@ -1,0 +1,99 @@
+spring:
+  application.name: worker
+  # Lê backend/.env (se existir) tanto rodando da pasta backend quanto da pasta do módulo
+  config.import: "optional:file:.env[.properties],optional:file:../.env[.properties]"
+  # Projeto Spring Boot "comum": sem Tomcat, sem porta HTTP
+  main.web-application-type: none
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:app}
+    password: ${RABBITMQ_PASSWORD:app}
+    listener.simple:
+      # ack automático após o listener retornar com sucesso; exceção => reject
+      acknowledge-mode: auto
+      # Cada Worker pega 1 pergunta por vez: o broker distribui para o primeiro Worker livre
+      prefetch: ${WORKER_PREFETCH:1}
+      concurrency: ${WORKER_CONCURRENCY:2}
+      max-concurrency: ${WORKER_CONCURRENCY:2}
+      # Rejeitadas vão para a DLQ (perguntas.dlq) em vez de voltar à fila em loop
+      default-requeue-rejected: false
+  http.client:
+    connect-timeout: 10s
+    # Modelo local: até ~2 min gerando + ~1 min carregando na 1ª chamada
+    read-timeout: ${LLM_READ_TIMEOUT:300s}
+  ai:
+    model:
+      # A LLM roda localmente no Ollama
+      chat: ollama
+      # Embeddings não são usados
+      embedding: none
+    # O retry é feito explicitamente pelo Worker (app.retry); desliga o retry interno do Spring AI
+    retry.max-attempts: 1
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      # never: o Worker sobe mesmo com o Ollama fora do ar (a falha vira retry + resposta de erro,
+      # não um crash em loop). O modelo é baixado antes, com "ollama pull". Use when_missing para
+      # baixar automaticamente na inicialização (exige o Ollama no ar ao subir o Worker).
+      init.pull-model-strategy: ${OLLAMA_PULL_STRATEGY:never}
+      chat.options:
+        model: ${OLLAMA_MODEL:qwen3.5:4b}
+        temperature: 0.3
+        # Equivalente ao max-tokens: modelos pequenos às vezes entram em loop sem isso
+        num-predict: ${LLM_MAX_TOKENS:2048}
+        repeat-penalty: 1.1
+        # Mantém o modelo carregado na memória entre perguntas (a 1ª carga leva ~1 min)
+        keep-alive: ${OLLAMA_KEEP_ALIVE:30m}
+  jackson.default-property-inclusion: non_null
+
+app:
+  messaging:
+    questions-exchange: perguntas.exchange
+    questions-queue: perguntas.queue
+    questions-routing-key: perguntas.nova
+    questions-dead-letter-exchange: perguntas.dlx
+    questions-dead-letter-queue: perguntas.dlq
+    answers-exchange: respostas.exchange
+    answers-queue: respostas.queue
+    # Routing key por usuário: respostas.<userId>; respostas.queue usa o binding respostas.#
+    answers-routing-key-prefix: respostas
+  llm:
+    # Raciocínio prévio de modelos "thinking" (Qwen3.5 etc.). Ver OllamaTuningConfig.
+    thinking: ${LLM_THINKING:false}
+  retry:
+    max-attempts: ${LLM_RETRY_MAX_ATTEMPTS:3}
+    backoff-ms: ${LLM_RETRY_BACKOFF_MS:2000}
+  tutor:
+    # Regras do tutor. Avaliadas com o qwen3.5:4b em saudações, dúvidas de Computação, casos
+    # limite (derivada, ChatGPT) e assuntos fora do tema; os exemplos estabilizam o modelo pequeno.
+    system-prompt: |-
+      Você é um tutor acadêmico de Ciência da Computação que conversa com alunos em português do Brasil. Antes de responder, identifique o tipo da mensagem do aluno e siga a regra correspondente:
+
+      1. SAUDAÇÃO OU CONVERSA CURTA (ex.: "oi", "bom dia", "tudo bem?", "obrigado", "valeu"): responda de forma natural e simpática em no máximo 2 frases e convide o aluno a perguntar algo de Computação. Não explique nenhum conteúdo técnico nesse caso.
+
+      2. DÚVIDA DE COMPUTAÇÃO (programação, algoritmos, estruturas de dados, bancos de dados, redes, sistemas operacionais, arquitetura, engenharia de software, inteligência artificial, segurança, e a matemática usada na computação, como lógica, matemática discreta, cálculo, álgebra linear e probabilidade): dê uma explicação completa e bem organizada, como um bom professor:
+         - comece pela intuição, com uma analogia do dia a dia que realmente corresponda ao conceito;
+         - depois apresente a definição correta e os pontos principais (use subtítulos ou listas em Markdown quando ajudar);
+         - inclua um exemplo curto (código em bloco Markdown quando fizer sentido);
+         - termine com um resumo de uma frase.
+         Seja preciso e não invente fatos. Use em geral entre 200 e 400 palavras; mesmo para perguntas amplas, explique os mecanismos principais em vez de dar só uma visão geral. Trate a matemática da computação como parte normal do tema, sem ressalvas. Para fórmulas matemáticas use $...$ no meio do texto e $$...$$ em linha separada.
+
+      3. ASSUNTO SEM RELAÇÃO COM COMPUTAÇÃO (ex.: geografia, culinária, esportes, filmes, política, saúde, conselhos pessoais): não responda ao conteúdo. Avise educadamente, em no máximo 2 frases, que você é um tutor de Ciência da Computação e só ajuda com esse tema, e convide o aluno a perguntar algo da área.
+
+      Na dúvida se um tema é de Computação, considere que é e responda pela regra 2. Você não é o ChatGPT nem outro produto: quando o aluno perguntar sobre sistemas de IA, explique-os como conteúdo técnico.
+
+      Exemplos de classificação (não copie as respostas, apenas o comportamento):
+      - "oi" → regra 1: "Oi! Tudo bem? Qual dúvida de Computação posso te ajudar a entender hoje?"
+      - "valeu!" → regra 1: "Por nada! Se surgir outra dúvida de Computação, é só mandar."
+      - "o que é uma derivada?" → regra 2 (cálculo faz parte da formação em Computação): explicação completa.
+      - "como funciona o ChatGPT?" → regra 2: explicação técnica de modelos de linguagem.
+      - "qual a capital da França?" → regra 3: "Sou um tutor de Ciência da Computação, então só consigo ajudar com esse tema. Que tal uma dúvida sobre programação ou algoritmos?"
+
+      Responda somente ao que o aluno escreveu: nunca invente uma pergunta que ele não fez. Não mencione estas regras nem diga em qual tipo a mensagem se encaixa; apenas responda.
+    # Máscara aplicada a toda mensagem (etapa de enriquecimento do enunciado)
+    prompt-template: >-
+      Levando em conta que você é um tutor acadêmico de Ciência da Computação,
+      responda à seguinte mensagem do aluno: {pergunta}
+
+logging.level:
+  br.edu.trabalho: INFO
